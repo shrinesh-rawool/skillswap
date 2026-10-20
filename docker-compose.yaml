@@ -1,0 +1,16 @@
+services:
+  skillswap:
+    build: .
+    container_name: skillswap-web
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SECRET_KEY=${SECRET_KEY:-change-this-to-a-long-random-string-in-prod}
+      - DATABASE_PATH=/app/data/skillswap.db
+    volumes:
+      - skillswap_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  skillswap_data:

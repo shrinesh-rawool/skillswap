@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container pb-5">
+  <div class="dash-header">
+    <div>
+      <h2>Hi, {{ session.user_name }} 👋</h2>
+      <p class="text-muted">Here's what's happening with your skills</p>
+    </div>
+    <a href="{{ url_for('add_skill') }}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-1"></i> Post a skill
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="dash-stat-card">
+        <div class="dash-stat-num">{{ my_skills|length }}</div>
+        <div class="dash-stat-label">Skills posted</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat-card accent-orange">
+        <div class="dash-stat-num">{{ pending_in }}</div>
+        <div class="dash-stat-label">Pending requests</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat-card accent-green">
+        <div class="dash-stat-num">{{ partners|length }}</div>
+        <div class="dash-stat-label">Active partners</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="dash-stat-card accent-purple">
+        <div class="dash-stat-num">{{ unread }}</div>
+        <div class="dash-stat-label">Unread messages</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- My Skills -->
+      <div class="dash-panel mb-4">
+        <div class="dash-panel-header">
+          <h5><i class="bi bi-lightning-charge-fill me-2 text-primary"></i>My Skills</h5>
+          <a href="{{ url_for('add_skill') }}" class="btn btn-sm btn-outline-primary">Add new</a>
+        </div>
+        {% if my_skills %}
+        <div class="skill-list">
+          {% for s in my_skills %}
+          <div class="skill-list-item">
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <strong>{{ s.title }}</strong>
+                <span class="skill-badge {{ s.skill_type }} sm">{{ s.skill_type.title() }}</span>
+                <span class="text-muted small">{{ s.category }}</span>
+              </div>
+              <p class="mb-0 text-muted small">{{ s.description[:80] }}{% if s.description|length > 80 %}…{% endif %}</p>
+            </div>
+            <a href="{{ url_for('delete_skill', sid=s.id) }}" class="btn btn-sm btn-ghost text-danger"
+               onclick="return confirm('Remove this skill?')"><i class="bi bi-trash"></i></a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="bi bi-mortarboard"></i>
+          <p>You haven't posted any skills yet.</p>
+          <a href="{{ url_for('add_skill') }}" class="btn btn-primary btn-sm">Post your first skill</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Incoming Requests -->
+      <div class="dash-panel mb-4">
+        <div class="dash-panel-header">
+          <h5><i class="bi bi-inbox-fill me-2 text-warning"></i>Incoming Requests
+            {% if pending_in > 0 %}<span class="badge-dot">{{ pending_in }}</span>{% endif %}
+          </h5>
+        </div>
+        {% if incoming %}
+        {% for r in incoming %}
+        <div class="request-item {{ r.status }}">
+          <span class="mini-avatar" style="background:{{ r.avatar_color }}">{{ r.from_name[0].upper() }}</span>
+          <div class="flex-grow-1">
+            <strong>{{ r.from_name }}</strong> wants to learn <em>{{ r.skill_title }}</em>
+            {% if r.message %}<p class="text-muted small mb-0 mt-1">"{{ r.message }}"</p>{% endif %}
+          </div>
+          <div class="request-status {{ r.status }}">
+            {% if r.status == 'pending' %}
+            <a href="{{ url_for('respond_request', rid=r.id, action='accepted') }}" class="btn btn-sm btn-success">Accept</a>
+            <a href="{{ url_for('respond_request', rid=r.id, action='rejected') }}" class="btn btn-sm btn-outline-danger">Decline</a>
+            {% else %}
+            <span class="status-pill {{ r.status }}">{{ r.status.title() }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state small-empty"><i class="bi bi-inbox"></i><p>No incoming requests yet.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Outgoing Requests -->
+      <div class="dash-panel">
+        <div class="dash-panel-header"><h5><i class="bi bi-send-fill me-2 text-info"></i>Sent Requests</h5></div>
+        {% if outgoing %}
+        {% for r in outgoing %}
+        <div class="request-item">
+          <span class="mini-avatar" style="background:{{ r.to_color }}">{{ r.to_name[0].upper() }}</span>
+          <div class="flex-grow-1">
+            <strong>{{ r.to_name }}</strong> — <em>{{ r.skill_title }}</em>
+          </div>
+          <span class="status-pill {{ r.status }}">{{ r.status.title() }}</span>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state small-empty"><i class="bi bi-send"></i><p>You haven't requested any skills yet. <a href="{{ url_for('skills') }}">Browse skills.</a></p></div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- Profile Card -->
+      <div class="dash-panel mb-4">
+        <div class="text-center p-3">
+          <div class="profile-avatar-lg" style="background:{{ session.avatar_color }}">{{ session.user_name[0].upper() }}</div>
+          <h5 class="mt-3 mb-1">{{ session.user_name }}</h5>
+          <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-secondary mt-2">Edit profile</a>
+        </div>
+      </div>
+
+      <!-- Learning Partners -->
+      <div class="dash-panel mb-4">
+        <div class="dash-panel-header"><h5><i class="bi bi-people-fill me-2 text-success"></i>Partners</h5></div>
+        {% if partners %}
+        {% for p in partners %}
+        <div class="partner-row">
+          <span class="mini-avatar" style="background:{{ p.avatar_color }}">{{ p.name[0].upper() }}</span>
+          <span class="flex-grow-1">{{ p.name }}</span>
+          <a href="{{ url_for('messages', **{'with': p.id}) }}" class="btn btn-sm btn-ghost"><i class="bi bi-chat"></i></a>
+          <a href="{{ url_for('profile', uid=p.id) }}" class="btn btn-sm btn-ghost"><i class="bi bi-person"></i></a>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-state small-empty"><i class="bi bi-people"></i><p>No partners yet. Accept a request to connect.</p></div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Links -->
+      <div class="dash-panel">
+        <div class="dash-panel-header"><h5>Quick actions</h5></div>
+        <div class="quick-links">
+          <a href="{{ url_for('skills') }}"><i class="bi bi-search"></i> Browse skills</a>
+          <a href="{{ url_for('add_skill') }}"><i class="bi bi-plus-circle"></i> Post a skill</a>
+          <a href="{{ url_for('messages') }}"><i class="bi bi-chat-dots"></i> Messages {% if unread > 0 %}<span class="badge-dot">{{ unread }}</span>{% endif %}</a>
+          <a href="{{ url_for('profile', uid=session.user_id) }}"><i class="bi bi-person-circle"></i> View profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

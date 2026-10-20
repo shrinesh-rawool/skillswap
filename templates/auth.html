@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ "Sign in" if mode=="login" else "Join SkillSwap" }}{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">⟨S⟩</div>
+    {% if mode == "login" %}
+    <h2>Welcome back</h2>
+    <p class="text-muted">Sign in to continue learning</p>
+    <form method="POST" action="{{ url_for('login') }}" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" placeholder="you@university.edu" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Sign in</button>
+    </form>
+    <p class="auth-switch">New here? <a href="{{ url_for('register') }}">Create a free account</a></p>
+    {% else %}
+    <h2>Join SkillSwap</h2>
+    <p class="text-muted">Start teaching and learning today</p>
+    <form method="POST" action="{{ url_for('register') }}" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Full name</label>
+        <input type="text" name="name" class="form-control" placeholder="Alex Rivera" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" placeholder="you@university.edu" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">University <span class="text-muted">(optional)</span></label>
+        <input type="text" name="university" class="form-control" placeholder="e.g. MIT, Stanford">
+      </div>
+      <div class="mb-4">
+        <label class="form-label">Password <span class="text-muted">(min 6 chars)</span></label>
+        <input type="password" name="password" class="form-control" placeholder="Choose a strong password" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Create account</button>
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

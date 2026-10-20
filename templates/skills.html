@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Browse Skills{% endblock %}
+{% block content %}
+<div class="container pb-5">
+  <div class="page-header">
+    <h2>Browse Skills</h2>
+    <p class="text-muted">Find someone who knows what you want to learn</p>
+  </div>
+
+  <div class="filter-bar">
+    <form method="GET" class="row g-2 align-items-end">
+      <div class="col-12 col-md-4">
+        <div class="search-input-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" name="q" class="form-control" placeholder="Search skills…" value="{{ q }}">
+        </div>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="cat" class="form-select">
+          <option value="">All categories</option>
+          {% for c in categories %}<option value="{{ c }}" {% if c==cat %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="type" class="form-select">
+          <option value="">All types</option>
+          <option value="teach" {% if stype=='teach' %}selected{% endif %}>Teaching</option>
+          <option value="learn" {% if stype=='learn' %}selected{% endif %}>Wanting to learn</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="level" class="form-select">
+          <option value="">Any level</option>
+          {% for l in ["Beginner","Intermediate","Advanced"] %}
+          <option value="{{ l }}" {% if level==l %}selected{% endif %}>{{ l }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+      </div>
+    </form>
+    {% if cat or q or stype or level %}
+    <a href="{{ url_for('skills') }}" class="clear-filters">Clear filters <i class="bi bi-x"></i></a>
+    {% endif %}
+  </div>
+
+  {% if skills %}
+  <p class="results-count">{{ skills|length }} skill{{ 's' if skills|length != 1 }} found</p>
+  <div class="row g-4">
+    {% for s in skills %}
+    <div class="col-md-6 col-lg-4">
+      <div class="skill-card h-100">
+        <div class="skill-card-header">
+          <span class="skill-badge {{ s.skill_type }}">{{ s.skill_type.title() }}</span>
+          <span class="skill-cat">{{ s.category }}</span>
+        </div>
+        <h5 class="skill-title">{{ s.title }}</h5>
+        <p class="skill-desc">{{ s.description[:120] }}{% if s.description|length > 120 %}…{% endif %}</p>
+        {% if s.wants_in_return %}
+        <div class="wants-bar">
+          <i class="bi bi-arrow-left-right"></i> Wants: <em>{{ s.wants_in_return }}</em>
+        </div>
+        {% endif %}
+        <div class="skill-footer">
+          <a href="{{ url_for('profile', uid=s.user_id) }}" class="d-flex align-items-center gap-2 text-decoration-none">
+            <span class="mini-avatar" style="background:{{ s.avatar_color }}">{{ s.name[0].upper() }}</span>
+            <div>
+              <span class="skill-author d-block">{{ s.name }}</span>
+              {% if s.university %}<span class="text-muted" style="font-size:0.72rem">{{ s.university }}</span>{% endif %}
+            </div>
+          </a>
+          <span class="level-badge">{{ s.level }}</span>
+        </div>
+        {% if session.user_id %}
+        <div class="skill-action">
+          <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#reqModal{{ s.id }}">
+            <i class="bi bi-send me-1"></i> Request
+          </button>
+        </div>
+        {% else %}
+        <div class="skill-action">
+          <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary w-100">Sign in to request</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if session.user_id %}
+    <div class="modal fade" id="reqModal{{ s.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Request: {{ s.title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form method="POST" action="{{ url_for('send_request', skill_id=s.id) }}">
+            <div class="modal-body">
+              <p class="text-muted">Sending to <strong>{{ s.name }}</strong></p>
+              <label class="form-label">Message <span class="text-muted">(optional)</span></label>
+              <textarea name="message" class="form-control" rows="3" placeholder="Introduce yourself and explain why you want to learn this…"></textarea>
+            </div>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Send request</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state large-empty">
+    <i class="bi bi-search"></i>
+    <h4>No skills found</h4>
+    <p>Try adjusting your filters, or <a href="{{ url_for('add_skill') }}">post a skill yourself</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

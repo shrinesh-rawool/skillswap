@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Post a Skill{% endblock %}
+{% block content %}
+<div class="container pb-5">
+  <div class="form-page">
+    <div class="form-page-header">
+      <h2>Post a skill</h2>
+      <p class="text-muted">Share what you can teach — or tell others what you want to learn</p>
+    </div>
+    <div class="form-card">
+      <form method="POST" action="{{ url_for('add_skill') }}" novalidate>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Skill type *</label>
+          <div class="type-toggle">
+            <label class="type-opt">
+              <input type="radio" name="skill_type" value="teach" checked>
+              <span><i class="bi bi-mortarboard-fill"></i> I can teach this</span>
+            </label>
+            <label class="type-opt">
+              <input type="radio" name="skill_type" value="learn">
+              <span><i class="bi bi-book-fill"></i> I want to learn this</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Skill title *</label>
+          <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g. Python for beginners, Spanish conversation, Jazz guitar" required maxlength="100">
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Category *</label>
+            <select name="category" class="form-select form-select-lg" required>
+              <option value="">Select a category</option>
+              {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Your level</label>
+            <select name="level" class="form-select form-select-lg">
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate" selected>Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description *</label>
+          <textarea name="description" class="form-control" rows="4"
+            placeholder="Describe what you'll teach or want to learn. Be specific — it helps others understand what they're getting." required maxlength="500"></textarea>
+          <div class="form-text">Max 500 characters</div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">What would you like in return? <span class="text-muted">(optional)</span></label>
+          <input type="text" name="wants_in_return" class="form-control"
+            placeholder="e.g. Help with calculus, English writing tips, open to anything…" maxlength="150">
+          <div class="form-text">Leave blank if you're just happy to help.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary btn-lg px-5">Post skill</button>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-ghost btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
